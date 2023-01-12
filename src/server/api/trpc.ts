@@ -17,14 +17,9 @@
  *
  */
 import { type CreateNextContextOptions } from "@trpc/server/adapters/next";
-import { type Session } from "next-auth";
 
-import { getServerAuthSession } from "../auth";
+// import { getServerAuthSession } from "../auth";
 import { prisma } from "../db";
-
-type CreateContextOptions = {
-  session: Session | null;
-};
 
 /**
  * This helper generates the "internals" for a tRPC context. If you need to use
@@ -35,9 +30,9 @@ type CreateContextOptions = {
  * - trpc's `createSSGHelpers` where we don't have req/res
  * @see https://create.t3.gg/en/usage/trpc#-servertrpccontextts
  */
-const createInnerTRPCContext = (opts: CreateContextOptions) => {
+const createInnerTRPCContext = () => {
   return {
-    session: opts.session,
+    session: null,
     prisma,
   };
 };
@@ -53,10 +48,7 @@ export const createTRPCContext = async (opts: CreateNextContextOptions) => {
   // Get the session from the server using the unstable_getServerSession wrapper function
   // const session = await getServerAuthSession({ req, res });
 
-  return createInnerTRPCContext({
-    // session,
-    session: null
-  });
+  return createInnerTRPCContext();
 };
 
 /**
