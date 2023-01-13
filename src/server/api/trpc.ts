@@ -19,7 +19,7 @@
 // import { type CreateNextContextOptions } from "@trpc/server/adapters/next";
 
 // import { getServerAuthSession } from "../auth";
-import { prisma } from "../db";
+import { prisma } from '../db';
 
 /**
  * This helper generates the "internals" for a tRPC context. If you need to use
@@ -57,8 +57,8 @@ export const createTRPCContext = () => {
  * This is where the trpc api is initialized, connecting the context and
  * transformer
  */
-import { initTRPC } from "@trpc/server";
-import superjson from "superjson";
+import { initTRPC } from '@trpc/server';
+import superjson from 'superjson';
 
 const t = initTRPC.context<typeof createTRPCContext>().create({
   transformer: superjson,
