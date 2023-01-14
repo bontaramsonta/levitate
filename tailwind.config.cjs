@@ -14,6 +14,18 @@ module.exports = {
         accent: '#B3E9C7',
         background: '#FAF9F9'
       },
+      keyframes: {
+        'pop-in': {
+          '0%': {transform: 'scale(0.5)' },
+          '60%': {transform: 'scale(1.2)' },
+          '80%': {transform: 'scale(0.9)' },
+          '100%': {transform: 'scale(1)' },
+        },
+
+      },
+      animation: {
+        'pop-in': 'pop-in 0.3s ease-out forwards'
+      }
     },
   },
   plugins: [require('@tailwindcss/forms')],
