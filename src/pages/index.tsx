@@ -2,7 +2,7 @@ import { type NextPage } from 'next';
 import Head from 'next/head';
 // import Link from "next/link";
 import Image from 'next/image';
-import React from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 
 // import { api } from "../utils/api";
 
@@ -128,11 +128,49 @@ const demoProducts = [
     views: 4_900,
     rating: 4.1,
   },
+  {
+    id: 13,
+    image: '/products/10.png',
+    title: 'Organic Cotton Summer Wear',
+    price: 610,
+    views: 1_000,
+    rating: 4.0,
+  },
+  {
+    id: 14,
+    image: '/products/11.png',
+    title: 'Organic Cotton Summer Wear',
+    price: 290,
+    views: 600,
+    rating: 3.7,
+  },
+  {
+    id: 15,
+    image: '/products/12.png',
+    title: 'Bamboo Linen Tops Set Of 3',
+    price: 599,
+    views: 4_900,
+    rating: 4.1,
+  },
 ];
 
 const Home: NextPage = () => {
   // const hello = api.example.hello.useQuery({ text: "from tRPC" });
+  const [scroll, setScroll] = useState(0);
+  const updateOnScroll = useCallback(() => {
+    if (window) setScroll(window.scrollY);
+  }, []);
 
+  useEffect(() => {
+    if (document) {
+      document.addEventListener('scroll', updateOnScroll);
+    }
+    return () => {
+      if (document) {
+        document.removeEventListener('scroll', updateOnScroll);
+      }
+    };
+  });
   return (
     <>
       <Head>
@@ -140,8 +178,13 @@ const Home: NextPage = () => {
         <meta name='description' content='sustainable clothing fashion brand' />
         <link rel='icon' href='/logo.png' />
       </Head>
-      <nav className='scroll fixed top-0 right-1/2 w-5/12 translate-x-1/2 py-10 md:right-5 md:translate-x-0 lg:right-10 xl:right-20'>
-        <ul className='flex min-w-[20rem] justify-between text-lg font-semibold'>
+      <nav
+        className={
+          'scroll fixed top-0 left-0 flex w-screen justify-end py-8 px-1 transition duration-200 sm:px-5 md:px-10 lg:px-10 xl:px-20 ' +
+          (scroll > 100 ? 'bg-white/20 backdrop-blur-md' : '')
+        }
+      >
+        <ul className='flex w-2/5 min-w-[20rem] justify-between text-lg font-semibold'>
           <li className='group'>
             <a
               href='#'
@@ -176,7 +219,7 @@ const Home: NextPage = () => {
           </li>
         </ul>
       </nav>
-      <main className='mb-10 bg-background'>
+      <main className='bg-background'>
         <section
           about='hero section'
           className='flex h-screen items-center space-x-5'
@@ -214,10 +257,7 @@ const Home: NextPage = () => {
             </button>
           </header>
         </section>
-        <section
-          about='our products'
-          className='mx-20 mt-10 grid grid-cols-3 gap-20'
-        >
+        <section about='our products' className='m-20 grid grid-cols-3 gap-20'>
           <h1 className='col-span-3 my-10 text-center text-4xl'>
             Our products
           </h1>
@@ -323,6 +363,27 @@ const Home: NextPage = () => {
                 ))}
               </div>
             </fieldset>
+            <fieldset className='flex flex-col space-y-4 md:space-y-8'>
+              <legend
+                about='material filter'
+                className='mb-1 w-full border-b-2 border-slate-300 pb-1 font-semibold md:mb-3 md:pb-3 md:text-lg'
+              >
+                Materials
+              </legend>
+              {filters.Materials.map((material) => (
+                <React.Fragment key={material}>
+                  <div className='flex items-center space-x-3'>
+                    <input
+                      type='checkbox'
+                      name={material}
+                      id={material}
+                      className='h-6 w-6 rounded-sm border-2 border-black text-black focus:ring-0 md:h-8 md:w-8'
+                    />
+                    <label htmlFor={material}>{material}</label>
+                  </div>
+                </React.Fragment>
+              ))}
+            </fieldset>
           </aside>
           <main
             about='product cards'
@@ -373,7 +434,172 @@ const Home: NextPage = () => {
               </div>
             ))}
           </main>
+          <div className='col-span-2 col-start-2 flex justify-center space-x-10'>
+            <button className='rounded-full bg-green-500/40 py-3 px-5 text-center align-middle text-xl font-bold transition-colors   duration-200 hover:bg-primary hover:text-white'>
+              1
+            </button>
+            <button className='rounded-full bg-green-500/40 py-3 px-5 text-center align-middle text-xl font-bold transition-colors   duration-200 hover:bg-primary hover:text-white'>
+              2
+            </button>
+            <button className='rounded-full bg-green-500/40 py-3 px-5 text-center align-middle text-xl font-bold   transition-colors duration-200 hover:bg-primary hover:text-white'>
+              3
+            </button>
+            <button className='rounded-full bg-green-500/40 py-3 px-5 text-center align-middle text-xl font-bold transition-colors   duration-200 hover:bg-primary hover:text-white'>
+              4
+            </button>
+            <button className='rounded-full bg-green-500/40 py-3 px-5 text-center align-middle text-xl font-bold transition-colors   duration-200 hover:bg-primary hover:text-white'>
+              5
+            </button>
+          </div>
         </section>
+        <footer>
+          <div
+            about='footer main content'
+            className='flex flex-wrap items-stretch space-y-5 bg-accent p-10'
+          >
+            <div className='mx-auto flex max-w-[40vw] flex-grow flex-col items-center justify-around space-y-3 md:max-w-[20vw]'>
+              <Image
+                src='/logo_full.png'
+                width={100}
+                height={100}
+                priority={true}
+                alt='full logo of our company'
+                className='h-24 w-24'
+              />
+              <p className='text-primary/80'>
+                &quot;Fashion Shouldn&apos;t Cost the Earth&quot;
+              </p>
+            </div>
+            <div
+              about='footer links'
+              className='flex h-full min-w-[50vw] flex-grow flex-wrap justify-around self-center'
+            >
+              <ul className='flex min-w-max flex-col space-y-3 px-2'>
+                <li>
+                  <h2 className='font-semibold text-primary'>Product</h2>
+                </li>
+                <li>
+                  <a href='#'>Overview</a>
+                </li>
+                <li>
+                  <a href='#'>Features</a>
+                </li>
+                <li>
+                  <a href='#'>Pricing</a>
+                </li>
+                <li>
+                  <a href='#'>Releases</a>
+                </li>
+              </ul>
+              <ul className='flex min-w-max flex-col space-y-3 px-2'>
+                <li>
+                  <h2 className='font-semibold text-primary'>Company</h2>
+                </li>
+                <li>
+                  <a href='#'>About Us</a>
+                </li>
+                <li>
+                  <a href='#'>Careers</a>
+                </li>
+                <li>
+                  <a href='#'>News</a>
+                </li>
+                <li>
+                  <a href='#'>Contact</a>
+                </li>
+              </ul>
+              <ul className='flex min-w-max flex-col space-y-3 px-2'>
+                <li>
+                  <h2 className='font-semibold text-primary'>Resource</h2>
+                </li>
+                <li>
+                  <a href='#'>Blog</a>
+                </li>
+                <li>
+                  <a href='#'>Newsletter</a>
+                </li>
+                <li>
+                  <a href='#'>Help Center</a>
+                </li>
+                <li>
+                  <a href='#'>Support</a>
+                </li>
+              </ul>
+              <ul className='flex min-w-max flex-col space-y-3 px-2'>
+                <li>
+                  <h2 className='font-semibold text-primary'>Social</h2>
+                </li>
+                <li>
+                  <a href='#'>Twitter</a>
+                </li>
+                <li>
+                  <a href='#'>Linkedin</a>
+                </li>
+                <li>
+                  <a href='#'>Facebook</a>
+                </li>
+              </ul>
+              <ul className='flex min-w-max flex-col space-y-3 px-2'>
+                <li>
+                  <h2 className='font-semibold text-primary'>Legal</h2>
+                </li>
+                <li>
+                  <a href='#'>Terms</a>
+                </li>
+                <li>
+                  <a href='#'>Privacy</a>
+                </li>
+                <li>
+                  <a href='#'>Cookies</a>
+                </li>
+                <li>
+                  <a href='#'>Licenses</a>
+                </li>
+              </ul>
+              <ul className='flex min-w-max flex-col space-y-3 px-2'>
+                <li>
+                  <h2 className='font-semibold text-primary'>Product</h2>
+                </li>
+                <li>
+                  <a href='#'>Overview</a>
+                </li>
+                <li>
+                  <a href='#'>Features</a>
+                </li>
+                <li>
+                  <a href='#'>Pricing</a>
+                </li>
+                <li>
+                  <a href='#'>Releases</a>
+                </li>
+              </ul>
+            </div>
+          </div>
+          <div
+            about='footer secondary content'
+            className='flex justify-between bg-primary p-10'
+          >
+            <p className='text-white/80'>
+              Mustaq Ahmed Ali, All Rights Reserved
+            </p>
+            <div className='flex items-center space-x-8'>
+              <Image
+                height={16}
+                width={16}
+                alt='linkedin logo'
+                src='/linkedin.png'
+                className='aspect-auto scale-150'
+              />
+              <Image
+                height={16}
+                width={16}
+                alt='facebook logo'
+                src='/facebook.png'
+                className='aspect-auto scale-150'
+              />
+            </div>
+          </div>
+        </footer>
       </main>
     </>
   );
