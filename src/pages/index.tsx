@@ -5,11 +5,15 @@ import Image from 'next/image';
 import React, { useCallback, useEffect, useState } from 'react';
 import HeartButton from '../components/HeartButton';
 
-// import { api } from "../utils/api";
+import { api } from '../utils/api';
+import type { Product, ProductFilters } from '../types/types';
+import { useAutoAnimate } from '@formkit/auto-animate/react';
+import { filterProducts } from '../utils/filterProducts';
 
-const filters = {
+const PRODUCTS_LIMIT = 10;
+
+const FILTERS = {
   category: [
-    'All products',
     'Outwear',
     'Bottoms',
     'Sweat Shirts',
@@ -17,8 +21,8 @@ const filters = {
     'Polos',
     'Jackets',
   ],
-  'Discount Range': ['Above 15%', 'Above 20%', 'Above 30%', 'Above 50%'],
-  Colours: [
+  discount: [15, 20, 30, 50],
+  colours: [
     'Black',
     'Blue',
     'Green',
@@ -28,212 +32,44 @@ const filters = {
     'Purple',
     'Red',
   ],
-  Sizes: ['XS', 'S', 'M', 'L', 'XL', 'XXL'],
-  Materials: ['Cotton', 'Polyester', 'Wool', 'Linen', 'Silk'],
+  sizes: ['XS', 'S', 'M', 'L', 'XL', 'XXL'],
+  materials: ['Cotton', 'Polyester', 'Wool', 'Linen', 'Silk'],
 } as const;
 
-const demoProducts = [
-  {
-    id: 1,
-    image: '/products/1.png',
-    title: 'Recycled Jeans',
-    price: 200,
-    views: 12_000,
-    discount: 20,
-    category: 'Bottoms',
-    material: 'Cotton',
-    Sizes: ['XS', 'S', 'M', 'L', 'XL', 'XXL'],
-    Colours: ['Black', 'Blue', 'Green', 'Grey'],
-    rating: 4.5,
-  },
-  {
-    id: 2,
-    image: '/products/2.png',
-    title: 'Organic Cotton Summer Wear',
-    price: 610,
-    views: 1_000,
-    discount: 10,
-    category: 'T-Shirts',
-    material: 'Cotton',
-    Sizes: ['XS', 'S', 'M', 'L'],
-    Colours: ['Black', 'Blue', 'Green', 'Grey', 'Orange', 'Pink'],
-    rating: 4.0,
-  },
-  {
-    id: 3,
-    image: '/products/3.png',
-    title: 'Handcrafter Pure Cotton Coat',
-    price: 290,
-    views: 600,
-    discount: 30,
-    category: 'Outwear',
-    material: 'Cotton',
-    Sizes: ['XS', 'S', 'XL', 'XXL'],
-    Colours: ['Black', 'Blue', 'Orange', 'Pink'],
-    rating: 3.7,
-  },
-  {
-    id: 4,
-    image: '/products/4.png',
-    title: 'Pure Cotton Char Coal Gray Sweatshirt',
-    price: 599,
-    views: 4_900,
-    discount: 50,
-    category: 'Sweat Shirts',
-    material: 'Wool',
-    Sizes: ['M', 'L', 'XL', 'XXL'],
-    Colours: ['Black', 'Blue', 'Green', 'Grey', 'Orange', 'Pink'],
-    rating: 4.1,
-  },
-  {
-    id: 5,
-    image: '/products/5.png',
-    title: 'Linen Black Dress',
-    price: 789,
-    views: 6_200,
-    discount: 20,
-    category: 'Outwear',
-    material: 'Linen',
-    Sizes: ['XS', 'S', 'M', 'L', 'XL'],
-    Colours: ['Black', 'Blue', 'Green', 'Grey'],
-    rating: 4.1,
-  },
-  {
-    id: 6,
-    image: '/products/6.png',
-    title: 'White Pure Cotton Shirt',
-    price: 309,
-    views: 1_008,
-    discount: 10,
-    category: 'Polos',
-    material: 'Cotton',
-    Sizes: ['XS', 'S', 'M', 'L', 'XL', 'XXL'],
-    Colours: ['Black', 'Blue', 'Green', 'Grey'],
-    rating: 3.9,
-  },
-  {
-    id: 7,
-    image: '/products/7.png',
-    title: 'Organic Cotton Cream Color Sweatshirt',
-    price: 1_000,
-    views: 8_800,
-    discount: 20,
-    category: 'Sweat Shirts',
-    material: 'Cotton',
-    Sizes: ['XS', 'S', 'M', 'L', 'XL', 'XXL'],
-    Colours: ['Black', 'Blue', 'Orange', 'Pink'],
-    rating: 4.4,
-  },
-  {
-    id: 8,
-    image: '/products/8.png',
-    title: 'Recycled Cotton Jeans',
-    price: 599,
-    views: 4_900,
-    discount: 50,
-    category: 'Bottoms',
-    material: 'Cotton',
-    Sizes: ['XS', 'S', 'M', 'L', 'XL', 'XXL'],
-    Colours: ['Black', 'Blue', 'Grey'],
-    rating: 4.1,
-  },
-  {
-    id: 9,
-    image: '/products/9.png',
-    title: 'Hemp Shirt And Paint',
-    price: 200,
-    views: 12_000,
-    discount: 20,
-    category: 'Polos',
-    material: 'Cotton',
-    Sizes: ['XS', 'S', 'M', 'L', 'XL', 'XXL'],
-    Colours: ['Black', 'Blue', 'Green', 'Grey'],
-    rating: 4.5,
-  },
-  {
-    id: 10,
-    image: '/products/10.png',
-    title: 'Organic Cotton Summer Wear',
-    price: 610,
-    views: 1_000,
-    discount: 10,
-    category: 'T-Shirts',
-    material: 'Cotton',
-    Sizes: ['XS', 'S', 'M', 'L'],
-    Colours: ['Black', 'Blue', 'Green', 'Grey', 'Orange', 'Pink'],
-    rating: 4.0,
-  },
-  {
-    id: 11,
-    image: '/products/11.png',
-    title: 'Organic Cotton Summer Wear',
-    price: 290,
-    views: 600,
-    discount: 30,
-    category: 'T-Shirts',
-    material: 'Cotton',
-    Sizes: ['XS', 'S', 'M', 'L'],
-    Colours: ['Black', 'Blue', 'Green', 'Grey', 'Orange', 'Pink'],
-    rating: 3.7,
-  },
-  {
-    id: 12,
-    image: '/products/12.png',
-    title: 'Bamboo Linen Tops Set Of 3',
-    price: 599,
-    views: 4_900,
-    discount: 50,
-    category: 'T-Shirts',
-    material: 'Cotton',
-    Sizes: ['XS', 'S', 'M', 'L'],
-    Colours: ['Black', 'Blue', 'Green', 'Grey', 'Orange', 'Pink'],
-    rating: 4.1,
-  },
-  {
-    id: 13,
-    image: '/products/10.png',
-    title: 'Organic Cotton Pink Jacket',
-    price: 610,
-    views: 1_000,
-    discount: 10,
-    category: 'Jackets',
-    material: 'Cotton',
-    Sizes: ['XS', 'S', 'M', 'L'],
-    Colours: ['Pink'],
-    rating: 4.0,
-  },
-  {
-    id: 14,
-    image: '/products/11.png',
-    title: 'Organic Cotton Summer Wear',
-    price: 290,
-    views: 600,
-    discount: 30,
-    category: 'T-Shirts',
-    material: 'Cotton',
-    Sizes: ['XS', 'S', 'M', 'L'],
-    Colours: ['Black', 'Blue', 'Green', 'Grey', 'Orange', 'Pink'],
-    rating: 3.7,
-  },
-  {
-    id: 15,
-    image: '/products/12.png',
-    title: 'Bamboo Linen Tops Set Of 3',
-    price: 599,
-    views: 4_900,
-    discount: 50,
-    category: 'T-Shirts',
-    material: 'Cotton',
-    Sizes: ['XS', 'S', 'M', 'L'],
-    Colours: ['Black', 'Blue', 'Green', 'Grey', 'Orange', 'Pink'],
-    rating: 4.1,
-  },
-];
-
 const Home: NextPage = () => {
-  // const hello = api.example.hello.useQuery({ text: "from tRPC" });
+  const [page, setPage] = useState(1);
+  const [appliedFilters, setAppliedFilters] = useState<ProductFilters>({
+    category: [],
+    discount: [],
+    colours: [],
+    sizes: [],
+    materials: [],
+  });
+  const { data } = api.product.getAll.useQuery(
+    {
+      page,
+      limit: PRODUCTS_LIMIT,
+      filters: appliedFilters,
+    },
+    {
+      select: useCallback(
+        (data: { products: Product[]; total: number }) => {
+          // client-side filter products based on filters
+          return {
+            products: filterProducts(data.products, appliedFilters),
+            total: data.total,
+          };
+        },
+        [appliedFilters]
+      ),
+    }
+  );
+  const [parent] = useAutoAnimate<HTMLElement>();
+
+  // for navbar scroll effect
   const [scroll, setScroll] = useState(0);
   const [demo, setDemo] = useState(false);
+
   const updateOnScroll = useCallback(() => {
     if (window) setScroll(window.scrollY);
   }, []);
@@ -248,6 +84,14 @@ const Home: NextPage = () => {
       }
     };
   });
+  // ------------------------------
+
+  // auto set page to 1 if no products are found and page is not 1
+  useEffect(() => {
+    if (data?.products.length === 0 && page !== 1) {
+      setPage(1);
+    }
+  }, [data?.products.length, page]);
 
   return (
     <>
@@ -347,17 +191,49 @@ const Home: NextPage = () => {
             className='col-span-1 flex max-w-[30vw] flex-col space-y-5 md:space-y-10'
           >
             <fieldset className='flex flex-col space-y-4 md:space-y-8'>
-              <legend
-                about='category filter'
-                className='mb-1 w-full border-b-2 border-slate-300 pb-1 font-semibold md:mb-3 md:pb-3 md:text-lg'
-              >
-                Category
-              </legend>
-              {filters.category.map((category) => (
+              <div className='mb-1 flex w-full justify-between border-b-2 border-slate-300 pb-1 md:mb-3 md:pb-3'>
+                <legend
+                  about='category filter'
+                  className='font-semibold md:text-lg'
+                >
+                  Category
+                </legend>
+                <button
+                  disabled={
+                    !appliedFilters.category.length &&
+                    !appliedFilters.colours.length &&
+                    !appliedFilters.sizes.length &&
+                    !appliedFilters.discount.length &&
+                    !appliedFilters.materials.length
+                  }
+                  className='font-semibold text-slate-500 underline md:text-base'
+                  onClick={() => {
+                    setAppliedFilters({
+                      category: [],
+                      colours: [],
+                      sizes: [],
+                      discount: [],
+                      materials: [],
+                    });
+                  }}
+                >
+                  clear all filters
+                </button>
+              </div>
+              {FILTERS.category.map((category) => (
                 <React.Fragment key={category}>
                   <div className='flex items-center space-x-3'>
                     <input
                       type='checkbox'
+                      onChange={(e) => {
+                        setAppliedFilters((filters) => ({
+                          ...filters,
+                          category: e.target.checked
+                            ? [...filters.category, category]
+                            : filters.category.filter((c) => c !== category),
+                        }));
+                      }}
+                      checked={!!appliedFilters.category.includes(category)}
                       name={category}
                       id={category}
                       className='h-6 w-6 rounded-sm border-2 border-black text-black focus:ring-0 md:h-8 md:w-8'
@@ -374,16 +250,30 @@ const Home: NextPage = () => {
               >
                 Discount Range
               </legend>
-              {filters['Discount Range'].map((discount) => (
+              {FILTERS.discount.map((discount) => (
                 <React.Fragment key={discount}>
                   <div className='flex items-center space-x-3'>
                     <input
                       type='radio'
+                      onClick={() => {
+                        setAppliedFilters((filters) => ({
+                          ...filters,
+                          discount: filters.discount.find((c) => c === discount)
+                            ? []
+                            : [discount],
+                        }));
+                      }}
+                      onChange={() => {
+                        // to shutup react about controlled vs uncontrolled
+                      }}
+                      checked={!!appliedFilters.discount.includes(discount)}
                       name='discount'
-                      id={discount}
+                      id={`${discount}`}
                       className='h-6 w-6 border-2 border-black shadow-none checked:border-0 checked:text-black   checked:ring-0 focus:ring-0 md:h-8 md:w-8'
                     />
-                    <label htmlFor={discount}>{discount}</label>
+                    <label
+                      htmlFor={`${discount}`}
+                    >{`Above ${discount}%`}</label>
                   </div>
                 </React.Fragment>
               ))}
@@ -396,11 +286,20 @@ const Home: NextPage = () => {
                 Colours
               </legend>
               <div className='grid grid-cols-1 place-content-center place-items-stretch gap-y-4 gap-x-2 md:grid-cols-2'>
-                {filters['Colours'].map((colour) => (
+                {FILTERS.colours.map((colour) => (
                   <React.Fragment key={colour}>
                     <div className='flex items-center space-x-3'>
                       <input
                         type='checkbox'
+                        onChange={(e) => {
+                          setAppliedFilters((filters) => ({
+                            ...filters,
+                            colours: e.target.checked
+                              ? [...filters.colours, colour]
+                              : filters.colours.filter((c) => c !== colour),
+                          }));
+                        }}
+                        checked={!!appliedFilters.colours.includes(colour)}
                         name='colour'
                         id={colour}
                         className='peer hidden'
@@ -424,12 +323,21 @@ const Home: NextPage = () => {
                 Sizes
               </legend>
               <div className='grid grid-cols-1 place-content-center gap-y-4 gap-x-2 md:grid-cols-4'>
-                {filters['Sizes'].map((size) => (
+                {FILTERS.sizes.map((size) => (
                   <React.Fragment key={size}>
                     <div className='flex items-center space-x-3'>
                       <input
                         type='checkbox'
                         name='size'
+                        onChange={(e) => {
+                          setAppliedFilters((filters) => ({
+                            ...filters,
+                            sizes: e.target.checked
+                              ? [...filters.sizes, size]
+                              : filters.sizes.filter((s) => s !== size),
+                          }));
+                        }}
+                        checked={!!appliedFilters.sizes.includes(size)}
                         id={size}
                         className='peer hidden'
                       />
@@ -451,7 +359,7 @@ const Home: NextPage = () => {
               >
                 Materials
               </legend>
-              {filters.Materials.map((material) => (
+              {FILTERS.materials.map((material) => (
                 <React.Fragment key={material}>
                   <div className='flex items-center space-x-3'>
                     <input
@@ -467,79 +375,89 @@ const Home: NextPage = () => {
             </fieldset>
           </aside>
           <main
+            ref={parent}
             about='product cards'
-            className='col-span-3 grid grid-flow-row grid-cols-1 gap-y-10 sm:grid-cols-2 lg:gap-y-20 xl:grid-cols-3'
+            className='col-span-3 grid grid-flow-row auto-rows-max grid-cols-1 gap-y-10 sm:grid-cols-2 lg:gap-y-20 xl:grid-cols-3'
           >
-            {demoProducts.map((product) => (
-              <div
-                key={product.id}
-                about='product card'
-                className='relative row-span-1 flex w-full min-w-[15rem] flex-col rounded-md bg-white shadow-md shadow-slate-500/20 transition-shadow duration-200 hover:shadow-xl md:max-w-[20rem]'
-              >
-                <HeartButton
-                  enabled={demo}
-                  onClick={() => {
-                    console.log('heart clicked');
-                    setDemo(!demo);
-                  }}
-                  className='absolute top-2 right-2'
-                />
-                <Image
-                  about='product image'
-                  src={product.image}
-                  alt={`${product.title} image`}
-                  width={232}
-                  height={248}
-                  className='h-full w-full rounded-t-md object-cover object-center'
-                />
+            {!!data &&
+              data.products.map((product) => (
                 <div
-                  about='product card content'
-                  className='flex h-full flex-col justify-between space-y-2 py-3 px-2'
+                  key={product.id}
+                  about='product card'
+                  className='relative row-span-1 flex w-full min-w-[15rem] flex-col rounded-md bg-white shadow-md shadow-slate-500/20 transition-shadow duration-200 hover:shadow-xl md:max-w-[15rem]'
                 >
-                  <h2 about='product title'>{product.title}</h2>
-                  <p>₹ {product.price}</p>
-                  <p>
-                    {product.rating}
-                    {''}
-                    <Image
-                      src='/star.png'
-                      width={16}
-                      height={16}
-                      className='mx-1 -mt-1.5 inline-block'
-                      alt='star icon'
-                    />
-                    <span className='text-primary opacity-60'>
-                      ({product.views}){''}
-                    </span>
-                    <Image
-                      src='/eye.png'
-                      width={16}
-                      height={16}
-                      className='-mt-1 ml-1 inline-block'
-                      alt='eye icon'
-                    />
-                  </p>
+                  <HeartButton
+                    enabled={demo}
+                    onClick={() => {
+                      console.log('heart clicked');
+                      setDemo(!demo);
+                    }}
+                    className='absolute top-2 right-2'
+                  />
+                  <Image
+                    about='product image'
+                    src={product.image}
+                    alt={`${product.title} image`}
+                    width={232}
+                    height={248}
+                    priority={true}
+                    className='w-full rounded-t-md object-cover object-center'
+                  />
+                  <div
+                    about='product card content'
+                    className='flex h-full flex-col justify-between space-y-2 py-3 px-2'
+                  >
+                    <h2 about='product title'>{product.title}</h2>
+                    <p>₹ {product.price}</p>
+                    <p className='flex w-full items-center space-x-1'>
+                      {product.rating}
+                      {''}
+                      <Image
+                        src='/star.png'
+                        width={16}
+                        height={16}
+                        className='mx-1 -mt-1.5 inline-block h-6 w-6'
+                        alt='star icon'
+                      />
+                      <span className='text-primary opacity-60'>
+                        ({product.views}){''}
+                      </span>
+                      <Image
+                        src='/eye.png'
+                        width={16}
+                        height={16}
+                        className=' ml-1 inline-block h-4 w-4'
+                        alt='eye icon'
+                      />
+                    </p>
+                  </div>
                 </div>
-              </div>
-            ))}
+              ))}
           </main>
-          <div className='col-span-3 col-start-2 flex justify-center space-x-10'>
-            <button className='rounded-full bg-green-500/40 py-3 px-5 text-center align-middle text-xl font-bold transition-colors   duration-200 hover:bg-primary hover:text-white'>
-              1
-            </button>
-            <button className='rounded-full bg-green-500/40 py-3 px-5 text-center align-middle text-xl font-bold transition-colors   duration-200 hover:bg-primary hover:text-white'>
-              2
-            </button>
-            <button className='rounded-full bg-green-500/40 py-3 px-5 text-center align-middle text-xl font-bold   transition-colors duration-200 hover:bg-primary hover:text-white'>
-              3
-            </button>
-            <button className='rounded-full bg-green-500/40 py-3 px-5 text-center align-middle text-xl font-bold transition-colors   duration-200 hover:bg-primary hover:text-white'>
-              4
-            </button>
-            <button className='rounded-full bg-green-500/40 py-3 px-5 text-center align-middle text-xl font-bold transition-colors   duration-200 hover:bg-primary hover:text-white'>
-              5
-            </button>
-          </div>
+          {!!data?.total && (
+            <div className='col-span-3 col-start-2 flex justify-center space-x-10'>
+              {Array.from(
+                { length: Math.ceil(data.total / PRODUCTS_LIMIT) },
+                (_, i) => (
+                  <button
+                    key={i}
+                    onClick={() => {
+                      console.log('[set page]', i + 1);
+                      setPage(i + 1);
+                    }}
+                    className={
+                      'rounded-full py-3 px-5 text-center align-middle text-xl font-bold transition-colors   duration-200 hover:bg-primary hover:text-white ' +
+                      (page === i + 1
+                        ? 'bg-green-500/80 text-black'
+                        : 'bg-green-500/40')
+                    }
+                  >
+                    {i + 1}
+                  </button>
+                )
+              )}
+            </div>
+          )}
         </section>
         <footer>
           <div
