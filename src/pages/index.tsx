@@ -256,6 +256,7 @@ const Home: NextPage = () => {
                     <input
                       type='radio'
                       onClick={() => {
+                        // on click is used to toggle selected radio option which is not possible with onChange
                         setAppliedFilters((filters) => ({
                           ...filters,
                           discount: filters.discount.find((c) => c === discount)
