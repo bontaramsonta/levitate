@@ -6,9 +6,8 @@ import React, { useCallback, useEffect, useState } from 'react';
 import HeartButton from '../components/HeartButton';
 
 import { api } from '../utils/api';
-import type { Product, ProductFilters } from '../types/types';
+import type { ProductFilters } from '../types/types';
 import { useAutoAnimate } from '@formkit/auto-animate/react';
-import { filterProducts } from '../utils/filterProducts';
 
 const PRODUCTS_LIMIT = 10;
 
@@ -52,16 +51,7 @@ const Home: NextPage = () => {
       filters: appliedFilters,
     },
     {
-      select: useCallback(
-        (data: { products: Product[]; total: number }) => {
-          // client-side filter products based on filters
-          return {
-            products: filterProducts(data.products, appliedFilters),
-            total: data.total,
-          };
-        },
-        [appliedFilters]
-      ),
+      keepPreviousData: true,
     }
   );
   const [parent] = useAutoAnimate<HTMLElement>();
@@ -148,7 +138,7 @@ const Home: NextPage = () => {
         >
           <Image
             className='w-full self-stretch object-cover'
-            src='/hero.png'
+            src='/hero.jpg'
             width={583}
             priority={true}
             height={1024}
